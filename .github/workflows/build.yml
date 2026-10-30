@@ -70,7 +70,13 @@ jobs:
         run: cmake -B build -G "Visual Studio 17 2022" -A x64 -T ClangCL
 
       - name: Build VST3 and app
-        run: cmake --build build --config Release --target LX6_VST3 LX6_Standalone --parallel
+        shell: bash
+        run: |
+          set -o pipefail
+          cmake --build build --config Release --target LX6_VST3 LX6_Standalone --parallel 2>&1 | tee build.log || {
+            grep -E "error|fatal" build.log | grep -v "warning" | sort -u | head -10 | while IFS= read -r l; do echo "::error::$l"; done
+            exit 1
+          }
 
       - name: Build installer (.exe)
         shell: pwsh
