@@ -16,7 +16,8 @@ This is a **modified version**. The changes:
 - `LX6_HOST` sections make the code safe on a desktop computer: no TCM memory sections, portable versions of
   ARM DSP instructions, bounds-safe table and delay-buffer access where the hardware relied on reading
   neighbouring memory, and the output jacks reported as always connected;
-- `engine/lxr/Src/Cc2Text.c` (the modulation-target table) is taken from the firmware's menu code.
+- `engine/lxr/Src/Cc2Text.c` (the modulation-target table) is taken from the firmware's menu code;
+- `FX/Distortion.c` is renamed `FX/MasterDistortion.c` (it clashed with `distortion.c` on case-insensitive file systems).
 
 As required by the firmware's additional terms, LX-6 is named and presented as a different product. It is
 not official Erica Synths firmware or software.

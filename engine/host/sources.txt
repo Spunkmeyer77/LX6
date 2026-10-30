@@ -6,7 +6,7 @@ lxr/Src/Soundengine/DSPAudio/Decay.c
 lxr/Src/Soundengine/DSPAudio/DrumVoice.c
 lxr/Src/Soundengine/DSPAudio/FX/Compressor.c
 lxr/Src/Soundengine/DSPAudio/FX/Delay.c
-lxr/Src/Soundengine/DSPAudio/FX/Distortion.c
+lxr/Src/Soundengine/DSPAudio/FX/MasterDistortion.c
 lxr/Src/Soundengine/DSPAudio/FX/FxRamBuffer.c
 lxr/Src/Soundengine/DSPAudio/FX/Reverb.c
 lxr/Src/Soundengine/DSPAudio/FX/Ringmod.c
