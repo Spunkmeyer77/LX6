@@ -17,6 +17,7 @@ public:
     void resized() override;
     void paint (juce::Graphics&) override;
     const ParamDef& def;
+    juce::String labelOverride;   // e.g. FX P1 shown as "TIME" when the delay is active
 private:
     struct Rot : juce::Slider { using Slider::Slider; void mouseEnter (const juce::MouseEvent& e) override { Slider::mouseEnter (e); getParentComponent()->repaint(); }
                                 void mouseExit (const juce::MouseEvent& e) override { Slider::mouseExit (e); getParentComponent()->repaint(); } };
@@ -119,6 +120,7 @@ private:
     LX6Processor& proc;
     int voice = 0;
     juce::TextButton typeButtons[5];
+    juce::TextButton sendButtons[6];
     juce::OwnedArray<Knob> fxKnobs;
     juce::OwnedArray<ValueRow> fxRows;
     juce::OwnedArray<juce::Component> lfoControls;

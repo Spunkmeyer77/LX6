@@ -1,10 +1,13 @@
-**LX-6 v0.1.0** — first release.
+**LX-6 v0.1.1** — fixes.
 
-Six-voice digital drum synthesizer based on the open-source Erica Synths LXR firmware, with a 16-step sequencer, randomizer and LXR-02 hardware editor mode.
+- The KIT name field no longer disappears after touching the interface.
+- FX bus: new **SEND VOICES TO FX** buttons (D1–HH). Only sent voices go through the effect, like on the LXR.
+- FX bus starts with audible settings, so the delay and compressor are heard as soon as a voice is sent.
+- FX knobs are labelled for the chosen effect.
 
 **Downloads**
-- **macOS** (Apple Silicon + Intel, macOS 11+): `LX-6-0.1.0-macOS.pkg` — AU, VST3 and standalone app
-- **Windows** (64-bit): `LX-6-0.1.0-Windows.exe` — VST3 and standalone app
+- **macOS** (Apple Silicon + Intel, macOS 11+): `LX-6-0.1.1-macOS.pkg` — AU, VST3 and standalone app
+- **Windows** (64-bit): `LX-6-0.1.1-Windows.exe` — VST3 and standalone app
 - `LX-6_Manual.pdf` — user manual
 - `LX-6_Update_History.pdf` — version history
 

@@ -33,7 +33,7 @@ Knob::Knob (APVTS& s, const ParamDef& d, juce::Colour pointer, int dia) : def (d
     slider.setTextBoxStyle (juce::Slider::NoTextBox, false, 0, 0);
     slider.setColour (juce::Slider::thumbColourId, pointer);
     slider.setMouseDragSensitivity (d.maxValue < 16 ? 60 : 180);
-    slider.setDoubleClickReturnValue (true, (double) juce::jlimit (0, d.maxValue, (int) lxr::initKitDefaults[d.lxrNr]));
+    slider.setDoubleClickReturnValue (true, (double) juce::jlimit (0, d.maxValue, defaultValue (d.lxrNr)));
     slider.setTooltip (d.name);
     addAndMakeVisible (slider);
     attachment = std::make_unique<APVTS::SliderAttachment> (s, paramId (d.lxrNr), slider);
@@ -48,7 +48,8 @@ void Knob::resized()
 void Knob::paint (juce::Graphics& g)
 {
     const bool showValue = slider.isMouseOverOrDragging();
-    const auto text = showValue ? valueToText (def, juce::roundToInt (slider.getValue())) : def.label;
+    const auto text = showValue ? valueToText (def, juce::roundToInt (slider.getValue()))
+                                : (labelOverride.isNotEmpty() ? labelOverride : def.label);
     g.setColour (showValue ? colours::textBright : colours::label);
     g.setFont (LAF::uiFont (9.5f).withExtraKerningFactor (0.08f));
     g.drawFittedText (text, 0, diameter + 4, getWidth(), 12, juce::Justification::centredTop, 1, 0.8f);
@@ -402,6 +403,22 @@ FxLfoPanel::FxLfoPanel (LX6Processor& p) : proc (p)
         b.onClick = [this, i] { setParamValue (proc.apvts, 234, i); };
         addAndMakeVisible (b);
     }
+    // SEND: route a voice into the FX bus (its OUTPUT becomes FX) or back to the main out
+    const char* shortNames[] { "D1", "D2", "D3", "SN", "CY", "HH" };
+    for (int v = 0; v < numVoices; ++v)
+    {
+        auto& b = sendButtons[v];
+        b.setButtonText (shortNames[v]);
+        b.setColour (juce::TextButton::buttonOnColourId, colours::voice (v));
+        b.setTooltip ("Send " + voiceNames()[v] + " through the FX bus");
+        b.onClick = [this, v]
+        {
+            const bool sent = paramValue (proc.apvts, 215 + v) == 6;
+            setParamValue (proc.apvts, 215 + v, sent ? 0 : 6);
+        };
+        addAndMakeVisible (b);
+        proc.apvts.addParameterListener (paramId (215 + v), this);
+    }
     for (int nr : { 236, 238, 239, 240, 241, 114 })
         addAndMakeVisible (fxKnobs.add (new Knob (proc.apvts, *findByLxr (nr), colours::text.brighter (0.3f), 34)));
     for (int nr : { 237, 242, 243, 245, 235 })
@@ -417,6 +434,8 @@ FxLfoPanel::FxLfoPanel (LX6Processor& p) : proc (p)
 FxLfoPanel::~FxLfoPanel()
 {
     proc.apvts.removeParameterListener (paramId (234), this);
+    for (int v = 0; v < numVoices; ++v)
+        proc.apvts.removeParameterListener (paramId (215 + v), this);
     for (int v = 0; v < numVoices; ++v)
         for (int which : { 1, 2 })
             proc.apvts.removeParameterListener (paramId (lfo (v, which)), this);
@@ -437,6 +456,21 @@ void FxLfoPanel::handleAsyncUpdate()
     fxRows[1]->setVisible (type == 3); // ratio
     fxRows[2]->setVisible (type == 2); // ring wave
     fxRows[3]->setVisible (type == 4); // delay type
+
+    for (int v = 0; v < numVoices; ++v)
+        sendButtons[v].setToggleState (paramValue (proc.apvts, 215 + v) == 6, juce::dontSendNotification);
+
+    // P1-P4 mean different things per effect
+    static const char* labels[5][4] { { "P1", "P2", "P3", "P4" },
+                                      { "DRIVE", "P2", "P3", "P4" },
+                                      { "FREQ", "P2", "P3", "P4" },
+                                      { "ATTACK", "RELEASE", "THRESH", "GAIN" },
+                                      { "TIME", "RANGE", "TONE", "FEEDBACK" } };
+    for (int i = 0; i < 4; ++i)
+    {
+        fxKnobs[i + 1]->labelOverride = labels[juce::jlimit (0, 4, type)][i];
+        fxKnobs[i + 1]->repaint();
+    }
     resized();
     repaint();
 }
@@ -461,7 +495,12 @@ void FxLfoPanel::resized()
     const int bw = (typeRow.getWidth() - 4 * 3) / 5;
     for (int i = 0; i < 5; ++i)
         typeButtons[i].setBounds (typeRow.getX() + i * (bw + 3), typeRow.getY(), bw, 24);
-    r.removeFromTop (10);
+    r.removeFromTop (22); // "SEND" caption
+    auto sendRow = r.removeFromTop (22);
+    const int sw = (sendRow.getWidth() - 5 * 3) / 6;
+    for (int v = 0; v < numVoices; ++v)
+        sendButtons[v].setBounds (sendRow.getX() + v * (sw + 3), sendRow.getY(), sw, 22);
+    r.removeFromTop (8);
     for (int i = 0; i < fxKnobs.size(); ++i)
         fxKnobs[i]->setBounds (r.getX() + (i % 3) * 58, r.getY() + (i / 3) * 52, 56, 52);
     r.removeFromTop (106);
@@ -493,6 +532,7 @@ void FxLfoPanel::paint (juce::Graphics& g)
 
     auto r = getLocalBounds().reduced (14, 14);
     drawSmallCaps (g, "FX BUS", r.removeFromTop (14), colours::dim);
+    drawSmallCaps (g, "SEND VOICES TO FX", { 14, sendButtons[0].getY() - 16, getWidth() - 28, 14 }, colours::dim, 9.0f);
 
     // LFO title + shape preview
     const int y = lfoDisplay.getY() - 22;
@@ -855,7 +895,7 @@ void TopBar::paint (juce::Graphics& g)
     g.setFont (LAF::monoFont (13.0f));
     g.drawText (proc.kitName, kitBox.reduced (10, 0).withTrimmedRight (14), juce::Justification::centredLeft);
     g.setColour (colours::dim);
-    g.drawText (juce::String::fromUTF8 ("\xe2\x96\xbe"), kitBox.removeFromRight (22), juce::Justification::centred);
+    g.drawText (juce::String::fromUTF8 ("\xe2\x96\xbe"), kitBox.withTrimmedLeft (kitBox.getWidth() - 22), juce::Justification::centred);
 
     drawSmallCaps (g, "AMT", amount.getBounds().withY (10).withHeight (14), colours::dim, 9.0f, juce::Justification::centred);
 

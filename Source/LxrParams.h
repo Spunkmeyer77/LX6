@@ -31,6 +31,7 @@ namespace lx6
     const std::vector<ParamDef>& allParams();
     const ParamDef* findByLxr (int lxrNr);
     juce::String paramId (int lxrNr);           // "p37"
+    int defaultValue (int lxrNr);               // Init kit value (with playable FX defaults)
 
     // parameters of one voice in one section, in panel order
     std::vector<const ParamDef*> paramsFor (int voice, Section s);

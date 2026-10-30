@@ -289,7 +289,7 @@ void LX6Processor::loadInitKit()
 {
     for (auto& d : lx6::allParams())
         if (auto* p = apvts.getParameter (lx6::paramId (d.lxrNr)))
-            p->setValueNotifyingHost (p->convertTo0to1 ((float) juce::jlimit (0, d.maxValue, (int) lxr::initKitDefaults[d.lxrNr])));
+            p->setValueNotifyingHost (p->convertTo0to1 ((float) juce::jlimit (0, d.maxValue, lx6::defaultValue (d.lxrNr))));
     kitName = "INIT KIT";
 }
 

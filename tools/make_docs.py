@@ -14,7 +14,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FONTS = os.path.join(ROOT, 'Resources', 'fonts')
 DOCS = os.path.join(ROOT, 'docs')
-VERSION = '0.1.0'
+VERSION = '0.1.1'
 DATE = '30 October 2026'
 
 pdfmetrics.registerFont(TTFont('SG', os.path.join(FONTS, 'SpaceGrotesk-Medium.ttf')))
@@ -161,11 +161,13 @@ def manual():
                  ['MOD · VELOCITY', 'Velocity amount, velocity destination (any parameter), velocity to volume on/off.']],
                 [42 * mm, W - 42 * mm])]
     s += [Paragraph('FX bus and LFO (right column)', h3),
-          Paragraph('The FX bus is fed by every voice whose OUTPUT is set to <b>FX</b>. Choose OFF, DRV (drive), RNG (ring modulator), '
-                    'CMP (compressor) or DEL (delay). DRY/WET and P1–P4 change meaning with the effect (delay: time, range, tone, feedback; '
-                    'compressor: attack, release, threshold, gain; drive: drive and tone shaping; ring: frequency). Extra menus appear for the '
-                    'chosen effect (distortion type, ratio, ring wave, delay or ping-pong). FX OUT sets where the effect goes. S.RATE ALL '
-                    'reduces the sample rate of everything.', body),
+          Paragraph('Like on the LXR, the FX bus only processes voices that are <b>sent</b> to it. Use the <b>SEND VOICES TO FX</b> buttons '
+                    '(D1 D2 D3 SN CY HH) to send a voice: its OUTPUT switches to FX and it is heard through the effect; click again to send it '
+                    'back to the main output. Then choose OFF, DRV (drive), RNG (ring modulator), CMP (compressor) or DEL (delay).', body),
+          Paragraph('The knob names follow the effect: delay = TIME, RANGE, TONE, FEEDBACK; compressor = ATTACK, RELEASE, THRESH, GAIN; '
+                    'drive = DRIVE and three shaping controls; ring = FREQ. DRY/WET blends the sent voices between dry and effect. '
+                    'Extra menus appear for the chosen effect (distortion type, ratio, ring wave, delay or ping-pong). FX OUT sets which '
+                    'output the effect returns to. S.RATE ALL reduces the sample rate of everything and works without sending.', body),
           Paragraph('The LFO block belongs to the selected voice: RATE, DEPTH, OFFSET, SHAPE (sine, triangle, saw up/down, square, random, '
                     'exponential up/down), SYNC (off or 4/1 … 1/32 of the tempo), DEST (any parameter of any voice) and RETRIG (restart the '
                     'LFO when a voice plays).', body)]
@@ -226,6 +228,13 @@ def history():
     doc = make_doc(os.path.join(DOCS, 'LX-6_Update_History.pdf'), 'Update History')
     W = doc.width
     s = [Paragraph('LX-6 Update History', h1), Paragraph('Newest version first.', small), Spacer(1, 6)]
+    s += [Paragraph(f'Version 0.1.1  ·  {DATE}', h2), Paragraph('Fixes.', body)]
+    s += bullets(['The KIT name field no longer disappears after touching the interface.',
+                  'FX bus: new <b>SEND VOICES TO FX</b> buttons route voices into the effect (before, this was only possible through each '
+                  'voice\'s OUTPUT setting and was easy to miss).',
+                  'FX bus starts with audible settings (dry/wet 50, delay tone and feedback up) instead of the LXR init kit\'s zeros, '
+                  'which left the delay silent.',
+                  'FX knobs are labelled per effect (TIME / RANGE / TONE / FEEDBACK for the delay, ATTACK / RELEASE / THRESH / GAIN for the compressor).'])
     s += [Paragraph(f'Version 0.1.0  ·  {DATE}', h2), Paragraph('First release.', body)]
     s += bullets(['LXR firmware sound engine running as a plugin: 6 voices (Drum 1–3, Snare, Cymbal, Hi-hat with open/closed), '
                   'FX bus (drive, ring, compressor, delay/ping-pong), one LFO per voice, velocity modulation, two stereo outputs.',

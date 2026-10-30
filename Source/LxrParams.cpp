@@ -199,6 +199,21 @@ const ParamDef* findByLxr (int lxrNr)
 
 juce::String paramId (int lxrNr) { return "p" + juce::String (lxrNr); }
 
+int defaultValue (int lxrNr)
+{
+    // the LXR init kit leaves the FX bus at zero (delay tone 0 = silent, comp gain 0):
+    // start it somewhere that sounds when a voice is sent to it
+    switch (lxrNr)
+    {
+        case 236: return 50;              // dry/wet
+        case 238: return 50;              // P1: delay time / attack / drive / ring freq
+        case 239: return 64;              // P2: delay range / release
+        case 240: return 90;              // P3: delay tone / threshold
+        case 241: return 70;              // P4: feedback / makeup gain
+        default:  return lxrNr >= 0 && lxrNr < lxr::numParamInfos ? (int) lxr::initKitDefaults[lxrNr] : 0;
+    }
+}
+
 std::vector<const ParamDef*> paramsFor (int voice, Section s)
 {
     std::vector<const ParamDef*> out;
@@ -259,7 +274,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout createLayout()
 
     for (auto& d : allParams())
     {
-        const int def = juce::jlimit (0, d.maxValue, (int) lxr::initKitDefaults[d.lxrNr]);
+        const int def = juce::jlimit (0, d.maxValue, defaultValue (d.lxrNr));
         const auto* dp = &d;
         layout.add (std::make_unique<juce::AudioParameterInt> (
             juce::ParameterID { paramId (d.lxrNr), 1 }, d.name, 0, d.maxValue, def,

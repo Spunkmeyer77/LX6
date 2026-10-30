@@ -60,6 +60,7 @@ int main()
 
     // 2. random kits must stay audible and never crash
     int quietKits = 0;
+    bool fxOk = false;
     for (int k = 0; k < 60; ++k)
     {
         proc.randomizer.amount = 1.0f;
@@ -89,6 +90,21 @@ int main()
     }
     proc.hardware.setMode (lx6::HardwareLink::Mode::Off);
     std::printf ("hardware mode: %d CC, %d notes\n", ccs, notes);
+
+    // 3b. FX bus: drum 1 sent to the delay must change the sound (defaults must be audible)
+    {
+        auto setP = [&] (int nr, int v) { auto* p = proc.apvts.getParameter ("p" + juce::String (nr)); p->setValueNotifyingHost (p->convertTo0to1 ((float) v)); };
+        auto energy = [&] { double e = 0; for (int b = 0; b < 200; ++b) { block(); e += buf.getRMSLevel (0, 0, bs); } return e; };
+        proc.loadInitKit();
+        const double dry = energy();
+        setP (234, 4); setP (215, 6);
+        const double del = energy();
+        setP (234, 3);
+        const double comp = energy();
+        setP (234, 0); setP (215, 0);
+        std::printf ("fx energy: dry %.2f  delay %.2f  comp %.2f\n", dry, del, comp);
+        fxOk = std::abs (del - dry) > dry * 0.05 && comp > 0.01;
+    }
 
     // 4. a second instance must not take over the running engine
     bool secondOwns;
@@ -124,12 +140,13 @@ int main()
         return false;
     };
     snap ("/tmp/lx6_ui.png");
+    if (click ("DEL")) snap ("/tmp/lx6_ui_del.png");
     if (click ("MOD")) snap ("/tmp/lx6_ui_mod.png");
     if (click ("LXR")) snap ("/tmp/lx6_ui_hw.png");
     ed.reset();
     std::printf ("snapshots written\n");
 
-    const bool ok = peak > 0.01f && quietKits == 0 && ccs > 0 && notes > 0 && ! secondOwns;
+    const bool ok = peak > 0.01f && quietKits == 0 && ccs > 0 && notes > 0 && ! secondOwns && fxOk;
     std::printf (ok ? "ALL OK\n" : "FAILED\n");
     return ok ? 0 : 1;
 }
