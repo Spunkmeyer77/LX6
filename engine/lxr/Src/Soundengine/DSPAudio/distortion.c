@@ -15,7 +15,12 @@
 #include "Soundengine/config.h"
 #include "math.h"
 //--------------------------------------------------
+#ifdef LX6_HOST
+/* LX6: plain external function (MSVC-style __inline would not emit a definition) */
+void setDistortionShape(Distortion *dist, float shape)
+#else
 IN_ITCM_RAM __inline void setDistortionShape(Distortion *dist, float shape)
+#endif
 {
 	shape -= 0.0078125; //to prevent division by 0
 	dist->shape = 2*(shape)/(1-(shape));
