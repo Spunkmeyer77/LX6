@@ -1,0 +1,13 @@
+LX-6 - six-voice digital drum synthesizer by Ticco Ross
+
+This installs:
+  - the Audio Unit  (/Library/Audio/Plug-Ins/Components)
+  - the VST3 plugin  (/Library/Audio/Plug-Ins/VST3)
+  - the standalone app  (/Applications)
+
+LX-6's sound engine is based on the open-source Erica Synths LXR firmware.
+LX-6 is an independent product and is not made or endorsed by Erica Synths.
+
+Store: https://ticcoross.gumroad.com/
+Contact: ticcoross@gmail.com
+Source code: https://github.com/Spunkmeyer77/LX6

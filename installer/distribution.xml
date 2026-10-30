@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<installer-gui-script minSpecVersion="2">
+    <title>LX-6 @VERSION@</title>
+    <organization>com.ticcoross</organization>
+    <welcome file="welcome.txt"/>
+    <license file="license.txt"/>
+    <options customize="allow" require-scripts="false" hostArchitectures="arm64,x86_64"/>
+    <domains enable_localSystem="true"/>
+    <choices-outline>
+        <line choice="au"/>
+        <line choice="vst3"/>
+        <line choice="app"/>
+    </choices-outline>
+    <choice id="au" title="Audio Unit" description="LX-6 for Logic, GarageBand, Ableton Live and other AU hosts">
+        <pkg-ref id="com.ticcoross.lx6.au"/>
+    </choice>
+    <choice id="vst3" title="VST3" description="LX-6 for VST3 hosts">
+        <pkg-ref id="com.ticcoross.lx6.vst3"/>
+    </choice>
+    <choice id="app" title="Standalone app" description="LX-6 as an app in /Applications">
+        <pkg-ref id="com.ticcoross.lx6.app"/>
+    </choice>
+    <pkg-ref id="com.ticcoross.lx6.au" version="@VERSION@">au.pkg</pkg-ref>
+    <pkg-ref id="com.ticcoross.lx6.vst3" version="@VERSION@">vst3.pkg</pkg-ref>
+    <pkg-ref id="com.ticcoross.lx6.app" version="@VERSION@">app.pkg</pkg-ref>
+</installer-gui-script>
