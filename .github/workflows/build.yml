@@ -36,6 +36,18 @@ jobs:
           codesign --force --deep --sign - "$A/VST3/LX-6.vst3"
           codesign --force --deep --sign - "$A/Standalone/LX-6.app"
 
+      - name: Validate (auval + pluginval)
+        run: |
+          set -o pipefail
+          A=build/LX6_artefacts/Release
+          mkdir -p ~/Library/Audio/Plug-Ins/Components
+          cp -R "$A/AU/LX-6.component" ~/Library/Audio/Plug-Ins/Components/
+          killall -9 AudioComponentRegistrar 2>/dev/null || true
+          auval -v aumu Lx6d TcRs 2>&1 | tee auval.log | tail -5 || { grep -E "FATAL|ERROR|FAIL" auval.log | head -10 | while IFS= read -r l; do echo "::error::auval: $l"; done; exit 1; }
+          curl -sSL -o pluginval.zip https://github.com/Tracktion/pluginval/releases/latest/download/pluginval_macOS.zip
+          unzip -q pluginval.zip
+          pluginval.app/Contents/MacOS/pluginval --strictness-level 5 --validate-in-process --skip-gui-tests "$A/VST3/LX-6.vst3" 2>&1 | tee pv.log | tail -5 || { grep -iE "fail|error|crash" pv.log | head -10 | while IFS= read -r l; do echo "::error::pluginval: $l"; done; exit 1; }
+
       - name: Build installer (.pkg)
         run: |
           set -e
